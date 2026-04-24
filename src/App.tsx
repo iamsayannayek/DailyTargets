@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   CheckCircle2,
-  Circle,
   Plus,
   ListTodo,
   Activity,
@@ -14,9 +13,7 @@ import {
   SkipForward,
   Flame,
   Settings,
-  Award,
   Calendar,
-  MoreVertical,
   X,
   Trophy,
   Trash2,
@@ -82,13 +79,6 @@ const generateLastNDays = (n: number): string[] => {
   return days;
 };
 
-// Formats "2026-04-25" to "25 Apr"
-const formatReadableDate = (dateStr: string): string => {
-  const [year, month, day] = dateStr.split("-");
-  const d = new Date(Number(year), Number(month) - 1, Number(day));
-  return `${d.getDate()} ${d.toLocaleString("en-US", { month: "short" })}`;
-};
-
 // Safe LocalStorage Parser with Generics
 const loadLocalData = <T,>(key: string, fallback: T): T => {
   try {
@@ -124,7 +114,7 @@ function DynamicIcon({ name, size = 16, className = "" }: DynamicIconProps) {
   return <IconComponent size={size} className={className} />;
 }
 
-// --- Mock Initial Data (Version 7 for fresh TS load) ---
+// --- Mock Initial Data ---
 const initialCategories: Category[] = [
   {
     id: "c1",
@@ -507,7 +497,6 @@ export default function App() {
           type={addType}
           editData={editData}
           categories={categories}
-          tasks={tasks}
           onClose={() => {
             setShowAddModal(false);
             setEditData(null);
@@ -633,7 +622,7 @@ function TabButton({ icon, label, id, activeTab, setActiveTab }: NavProps) {
   return (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors ${isActive ? "text-[#db4c3f]" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"}`}
+      className={`flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors ${isActive ? "text-indigo-500 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"}`}
     >
       <div
         className={`transition-transform duration-300 ${isActive ? "scale-110" : ""}`}
@@ -769,7 +758,7 @@ function ConsistencyGrid({ tasks }: ConsistencyGridProps) {
   return (
     <div
       ref={gridRef}
-      className="bg-white dark:bg-[#282828] border border-[#f0f0f0] dark:border-[#333] p-6 rounded-2xl shadow-sm relative"
+      className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#333] p-6 rounded-2xl shadow-sm relative"
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <h4 className="font-bold text-lg flex items-center gap-2">
@@ -880,7 +869,7 @@ function ConsistencyGrid({ tasks }: ConsistencyGridProps) {
         <span>More</span>
       </div>
 
-      {/* Floating Tooltip - Completely immune to scroll clipping */}
+      {/* Floating Tooltip - Immune to scroll clipping */}
       {tooltip && (
         <div
           className="absolute bg-[#303030] text-[#f0f0f0] text-[11px] font-medium px-2.5 py-1.5 rounded-md z-[100] shadow-xl whitespace-nowrap pointer-events-none animate-in fade-in duration-150"
@@ -961,7 +950,7 @@ function Dashboard({ tasks, categories, toggleTask }: DashboardProps) {
         })}
       </div>
 
-      {/* Moved Consistency Grid to Dashboard directly below the category progress */}
+      {/* Consistency Grid explicitly on Dashboard */}
       <ConsistencyGrid tasks={tasks} />
 
       <div className="space-y-4 pt-4">
@@ -1619,7 +1608,7 @@ function StatsView({ tasks, userStats }: StatsViewProps) {
       <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:justify-between md:items-center gap-6">
           <div>
-            <p className="text-white/80 font-semibold tracking-wider uppercase text-sm mb-1">
+            <p className="text-indigo-100 font-semibold tracking-wider uppercase text-sm mb-1">
               Total Score
             </p>
             <h3 className="text-5xl font-black">
@@ -1629,22 +1618,25 @@ function StatsView({ tasks, userStats }: StatsViewProps) {
               </span>
             </h3>
           </div>
-          <div className="hidden md:flex w-20 h-20 rounded-full bg-white/20 items-center justify-center backdrop-blur-md shadow-inner">
-            <Trophy size={40} className="text-amber-300 drop-shadow-sm" />
+          <div className="hidden md:flex w-24 h-24 rounded-full bg-white/20 items-center justify-center backdrop-blur-md border border-white/30 shadow-inner">
+            <Trophy size={48} className="text-amber-300 drop-shadow-md" />
           </div>
         </div>
 
         <div className="relative z-10 mt-8">
-          <div className="flex justify-between text-sm mb-2 font-bold tracking-wide">
+          <div className="flex justify-between text-sm mb-3 font-bold tracking-wide">
             <span>Level {userStats.level}</span>
             <span>Level {userStats.level + 1}</span>
           </div>
-          <div className="h-2 bg-black/20 rounded-full overflow-hidden">
+          <div className="h-3 bg-black/20 rounded-full overflow-hidden shadow-inner">
             <div
               className="h-full bg-white rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${userStats.points % 100}%` }}
             />
           </div>
+          <p className="text-sm font-medium text-right mt-3 text-indigo-100">
+            {100 - (userStats.points % 100)} pts to next level!
+          </p>
         </div>
         <div className="absolute top-[-40%] right-[-10%] w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
       </div>
@@ -1699,7 +1691,6 @@ interface AddModalProps {
   onAdd: (type: ItemType, data: Partial<Task> | Partial<Category>) => void;
   editData: any;
   categories: Category[];
-  tasks: Task[];
 }
 
 function AddModal({
@@ -1708,7 +1699,6 @@ function AddModal({
   onAdd,
   editData,
   categories,
-  tasks,
 }: AddModalProps) {
   const [localType, setLocalType] = useState<ItemType>(type);
 
